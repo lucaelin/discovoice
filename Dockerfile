@@ -1,10 +1,13 @@
-FROM node:10-alpine
+#FROM node:10-alpine
+FROM node:10
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN apk add --no-cache git make gcc g++ python && npm i && apk del git make gcc g++ python
+#RUN apk add --no-cache git make gcc g++ python
+RUN npm i
+#RUN apk del git make gcc g++ python
 
 COPY . .
 
