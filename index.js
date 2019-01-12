@@ -59,14 +59,29 @@ client.on('ready', async () => {
       message.delete().catch(e=>{});
       return;
     }
-    const text = `${message.author.username.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says: ${message.content}`;
-    console.log(text);
 
     const emoteFilter = /<:(\w*):[0-9]*>/;
     while (emoteFilter.test(message.content)) {
       let emote = emoteFilter.exec(message.content);
       message.content = message.content.replace(emote[0], emote[1]);
     }
+
+    const tagFilter = /<#([0-9]*)>/;
+    while (tagFilter.test(message.content)) {
+      let tag = tagFilter.exec(message.content);
+      let channel = client.channels.get(tag[1]);
+      message.content = message.content.replace(tag[0], '# '+channel.name);
+    }
+
+    const userFilter = /<@([0-9]*)>/;
+    while (userFilter.test(message.content)) {
+      let userId = userFilter.exec(message.content);
+      let user = message.guild.members.get(userId[1]).user;
+      message.content = message.content.replace(userId[0], '@ '+user.username);
+    }
+
+    const text = `${message.author.username.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says: ${message.content}`;
+    console.log(text);
 
     if (!settings.prefix) settings.prefix = await googleTTS(`${message.author.username.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says:`, 'en', 1);
     const url = await googleTTS(`${message.content}`, settings.lang||'en', 1);
