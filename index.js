@@ -60,7 +60,7 @@ client.on('ready', async () => {
       return;
     }
 
-    const emoteFilter = /<:(\w*):[0-9]*>/;
+    const emoteFilter = /<a?:(\w*):[0-9]*>/;
     while (emoteFilter.test(message.content)) {
       let emote = emoteFilter.exec(message.content);
       message.content = message.content.replace(emote[0], emote[1]);
@@ -78,6 +78,13 @@ client.on('ready', async () => {
       let userId = userFilter.exec(message.content);
       let user = message.guild.members.get(userId[1]).user;
       message.content = message.content.replace(userId[0], '@ '+user.username);
+    }
+
+    const rolesFilter = /<@&([0-9]*)>/;
+    while (rolesFilter.test(message.content)) {
+      let roleId = rolesFilter.exec(message.content);
+      let role = message.guild.roles.get(roleId[1]);
+      message.content = message.content.replace(roleId[0], '@ '+role.name);
     }
 
     const text = `${message.author.username.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says: ${message.content}`;
