@@ -126,3 +126,12 @@ client.on('ready', async () => {
     });
   });
 });
+
+process
+  .on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', reason.stack || reason);
+    process.exit(1);
+  }).on('uncaughtException', err => {
+    console.error('Uncaught Exception:', err);
+    process.exit(1);
+  });
