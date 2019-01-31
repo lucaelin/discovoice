@@ -25,19 +25,41 @@ client.on('ready', async () => {
 
   let pending = Promise.resolve();
   let lastUser = 0;
-  let currentlySpeaking = [];
+  let currentlySpeaking = {};
   let speakCbs = [];
+
+  const timeoutCurrentlySpeaking = () => {
+    let timeout = (new Date()).getTime() - 1*60*1000;
+    for (const id of Object.keys(currentlySpeaking)) {
+      if (currentlySpeaking[id].lastSeen < timeout) delete currentlySpeaking[id];
+    }
+  }
+
 
   voice.on('speaking', (user, {bitfield})=>{
     if (!user) user = {};
     user.speaking = !!bitfield;
     let timeout = (new Date()).getTime() - 1*60*1000;
 
-    currentlySpeaking = currentlySpeaking.filter(({id, lastSeen})=>id!==user.id || lastSeen < timeout);
-    if (user.speaking) currentlySpeaking.push({id: user.id, lastSeen: new Date().getTime()});
+    currentlySpeaking[user.id] = {
+      lastSeen: new Date().getTime(),
+    };
 
-    if (!currentlySpeaking.length && speakCbs.length) speakCbs.shift(1)();
+    if(!user.speaking) delete currentlySpeaking[user.id];
+
+    timeoutCurrentlySpeaking();
+    if (!Object.keys(currentlySpeaking).length && speakCbs.length) speakCbs.shift(1)();
   });
+
+  const playVoice = clip => {
+    const dispatcher = voice.play(clip);
+    return new Promise((res, rej) => {
+      dispatcher.on('end', () => {
+        dispatcher.destroy();
+        return res();
+      });
+    });
+  }
 
   client.on('message', async message => {
     if (!message.guild) return;
@@ -97,28 +119,20 @@ client.on('ready', async () => {
     pending = new Promise(async (res)=>{
       await oldpending;
 
-      speakCbs.push(()=>{
+      speakCbs.push(async ()=>{
         let say = settings.prefix;
         if (lastUser === message.author.id) {
           say = url;
         }
-        const dispatcher1 = voice.play(say);
-
-        dispatcher1.on('end', () => {
-          //console.log('Finished playing!');
-          dispatcher1.destroy();
-          if (lastUser === message.author.id) return res();
-          const dispatcher2 = voice.play(url);
-          dispatcher2.on('end', ()=>{
-            dispatcher2.destroy();
-            res();
-          })
-        });
+        await playVoice(say);
+        if (lastUser === message.author.id) return res();
+        await playVoice(url);
+        res();
       });
 
       let timeout = (new Date()).getTime() - 1*60*1000;
-      currentlySpeaking = currentlySpeaking.filter(({lastSeen})=>lastSeen < timeout);
-      if (!currentlySpeaking.length) speakCbs.shift(1)();
+      timeoutCurrentlySpeaking();
+      if (!Object.keys(currentlySpeaking).length) speakCbs.shift(1)();
     }).then(()=>{
       lastUser = message.author.id;
       message.react('✅').catch(e=>{});
