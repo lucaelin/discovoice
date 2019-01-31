@@ -28,11 +28,12 @@ client.on('ready', async () => {
   let currentlySpeaking = {};
   let speakCbs = [];
 
-  const timeoutCurrentlySpeaking = () => {
+  const processCurrentlySpeaking = () => {
     let timeout = (new Date()).getTime() - 1*60*1000;
     for (const id of Object.keys(currentlySpeaking)) {
       if (currentlySpeaking[id].lastSeen < timeout) delete currentlySpeaking[id];
     }
+    if (!Object.keys(currentlySpeaking).length && speakCbs.length) speakCbs.shift(1)();
   }
 
 
@@ -47,8 +48,7 @@ client.on('ready', async () => {
 
     if(!user.speaking) delete currentlySpeaking[user.id];
 
-    timeoutCurrentlySpeaking();
-    if (!Object.keys(currentlySpeaking).length && speakCbs.length) speakCbs.shift(1)();
+    processCurrentlySpeaking();
   });
 
   const playVoice = clip => {
@@ -130,9 +130,7 @@ client.on('ready', async () => {
         res();
       });
 
-      let timeout = (new Date()).getTime() - 1*60*1000;
-      timeoutCurrentlySpeaking();
-      if (!Object.keys(currentlySpeaking).length) speakCbs.shift(1)();
+      processCurrentlySpeaking();
     }).then(()=>{
       lastUser = message.author.id;
       message.react('✅').catch(e=>{});
