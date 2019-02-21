@@ -95,7 +95,7 @@ client.on('ready', async () => {
       message.content = message.content.replace(tag[0], '# '+channel.name);
     }
 
-    const userFilter = /<@([0-9]*)>/;
+    const userFilter = /<@!?([0-9]*)>/;
     while (userFilter.test(message.content)) {
       let userId = userFilter.exec(message.content);
       let user = message.guild.members.get(userId[1]).user;
