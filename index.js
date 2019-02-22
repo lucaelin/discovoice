@@ -105,10 +105,12 @@ client.on('ready', async () => {
     if (message.content.startsWith('>_')) {
       const parts = message.content.split(' ');
       if (parts[0] === '>_ignore') {
-        const [, id] = filters.userFilter.regex.exec(parts[1]);
+        if (!parts[1]) return;
+        const [, id] = filters.userFilter.regex.exec(parts[1]) || [];
         if (id) {
           delete currentlySpeaking[id];
           message.reply('I\'m going to ignore '+parts[1]);
+          processCurrentlySpeaking();
         }
         message.delete().catch(e=>{});
       } else {
