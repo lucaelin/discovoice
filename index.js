@@ -12,6 +12,36 @@ const selectiveMode = true;
 
 const users = {};
 
+const filters = {
+  emoteFilter: {
+    regex: /<a?:(\w*):[0-9]*>/,
+    run: (message, tag) => {
+      return message.content.replace(emote[0], emote[1]);
+    },
+  },
+  tagFilter: {
+    regex: /<#([0-9]*)>/,
+    run: (message, tag) => {
+      let channel = client.channels.get(tag[1]);
+      return message.content.replace(tag[0], '# '+channel.name);
+    }
+  },
+  userFilter: {
+    regex: /<@!?([0-9]*)>/,
+    run: (message, tag) => {
+      let user = message.guild.members.get(tag[1]).user;
+      return message.content.replace(tag[0], '@ '+user.username);
+    }
+  },
+  rolesFilter: {
+    regex: /<@&([0-9]*)>/,
+    run: (message, tag) => {
+      let role = message.guild.roles.get(tag[1]);
+      return message.content.replace(tag[0], '@ '+role.name);
+    }
+  }
+}
+
 client.on('ready', async () => {
   const ttsChannel = await client.channels.get(ttsChannelId);
   setInterval(async ()=>{
@@ -74,39 +104,28 @@ client.on('ready', async () => {
     const settings = users[message.author.id];
     if (message.content.startsWith('>_')) {
       const parts = message.content.split(' ');
-      const cmd = parts[0]+'  ';
-      lang = cmd[2] + cmd[3];
-      users[message.author.id].lang = lang;
-      message.reply('I\'ve set your language to '+lang);
-      message.delete().catch(e=>{});
+      if (parts[0] === '>_ignore') {
+        const [, id] = filters.userFilter.regex.exec(parts[1]);
+        if (id) {
+          delete currentlySpeaking[id];
+          message.reply('I\'m going to ignore '+parts[1]);
+        }
+        message.delete().catch(e=>{});
+      } else {
+        const cmd = parts[0]+'  ';
+        lang = cmd[2] + cmd[3];
+        users[message.author.id].lang = lang;
+        message.reply('I\'ve set your language to '+lang);
+        message.delete().catch(e=>{});
+
+      }
       return;
     }
 
-    const emoteFilter = /<a?:(\w*):[0-9]*>/;
-    while (emoteFilter.test(message.content)) {
-      let emote = emoteFilter.exec(message.content);
-      message.content = message.content.replace(emote[0], emote[1]);
-    }
-
-    const tagFilter = /<#([0-9]*)>/;
-    while (tagFilter.test(message.content)) {
-      let tag = tagFilter.exec(message.content);
-      let channel = client.channels.get(tag[1]);
-      message.content = message.content.replace(tag[0], '# '+channel.name);
-    }
-
-    const userFilter = /<@!?([0-9]*)>/;
-    while (userFilter.test(message.content)) {
-      let userId = userFilter.exec(message.content);
-      let user = message.guild.members.get(userId[1]).user;
-      message.content = message.content.replace(userId[0], '@ '+user.username);
-    }
-
-    const rolesFilter = /<@&([0-9]*)>/;
-    while (rolesFilter.test(message.content)) {
-      let roleId = rolesFilter.exec(message.content);
-      let role = message.guild.roles.get(roleId[1]);
-      message.content = message.content.replace(roleId[0], '@ '+role.name);
+    for (const filter of filters) {
+      while (filter.regex.test(message.content)) {
+        message.content = filter.run(message, filter.regex.exec(message.content));
+      }
     }
 
     const text = `${message.author.username.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says: ${message.content}`;
