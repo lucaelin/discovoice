@@ -10,5 +10,6 @@ RUN npm i
 #RUN apk del git make gcc g++ python
 
 COPY . .
+COPY ./ffmpeg-binaries/bin node_modules/ffmpeg-binaries/bin
 
 CMD [ "npm", "start" ]
