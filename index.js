@@ -16,7 +16,7 @@ const filters = {
   emoteFilter: {
     regex: /<a?:(\w*):[0-9]*>/,
     run: (message, tag) => {
-      return message.content.replace(emote[0], emote[1]);
+      return message.content.replace(tag[0], tag[1]);
     },
   },
   tagFilter: {
