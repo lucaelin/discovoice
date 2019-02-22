@@ -122,7 +122,7 @@ client.on('ready', async () => {
       return;
     }
 
-    for (const filter of filters) {
+    for (const filter of Object.values(filters)) {
       while (filter.regex.test(message.content)) {
         message.content = filter.run(message, filter.regex.exec(message.content));
       }

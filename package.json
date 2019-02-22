@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "git+https://github.com/discordjs/discord.js.git",
+    "discord.js": "git+https://github.com/discordjs/discord.js.git#efbbfbcec6d9b090eb7053bbb39acea50c46c517",
     "ffmpeg-binaries": "^4.0.0",
     "google-tts-api": "0.0.4",
     "node-opus": "^0.3.1",
