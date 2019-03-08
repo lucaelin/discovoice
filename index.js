@@ -39,6 +39,12 @@ const filters = {
       let role = message.guild.roles.get(tag[1]);
       return message.content.replace(tag[0], '@ '+role.name);
     }
+  },
+  linkFilter: {
+    regex: /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
+    run: (message, tag) => {
+      return message.content.replace(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, 'url');
+    }
   }
 }
 
