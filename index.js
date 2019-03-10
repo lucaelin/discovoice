@@ -45,6 +45,18 @@ const filters = {
     run: (message, tag) => {
       return message.content.replace(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, 'url');
     }
+  },
+  blockqoteCodeFilter: {
+    regex: /```.*```/s,
+    run: (message, tag) => {
+      return message.content.replace(/```.*```/s, 'code');
+    }
+  },
+  CodeFilter: {
+    regex: /`\w+.*`/g,
+    run: (message, tag) => {
+      return message.content.replace(/`\w+.*`/g, 'code');
+    }
   }
 }
 
