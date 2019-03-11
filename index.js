@@ -47,15 +47,15 @@ const filters = {
     }
   },
   blockqoteCodeFilter: {
-    regex: /(`{3}[a-z]*\n[\s\S]*?\n`{3})/,
+    regex: /`{3}((?!`{3}).)+`{3}/,
     run: (message, tag) => {
-      return message.content.replace(/(`{3}[a-z]*\n[\s\S]*?\n`{3})/, 'code');
+      return message.content.replace(/`{3}((?!`{3}).)+`{3}/, 'code');
     }
   },
   CodeFilter: {
-    regex: /(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/,
+    regex: /`((?!`).)+`/,
     run: (message, tag) => {
-      return message.content.replace(/(`+)\s*([\s\S]*?[^`])\s*\1(?!`)/, 'code');
+      return message.content.replace(/`((?!`).)+`/, 'code');
     }
   }
 }
