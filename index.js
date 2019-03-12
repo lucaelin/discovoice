@@ -136,10 +136,13 @@ client.on('ready', async () => {
       }
     }
 
-    const text = `${message.author.username.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says: ${message.content}`;
+    const text = `${message.member.displayName.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says: ${message.content}`;
     console.log(text);
 
-    if (!settings.prefix) settings.prefix = await googleTTS(`${message.author.username.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says:`, 'en', 1);
+    if (!settings.prefix || settings.displayName != message.member.displayName) {
+      settings.prefix = await googleTTS(`${message.member.displayName.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says:`, 'en', 1);
+      settings.displayName = message.member.displayName;
+    }
     const url = await googleTTS(`${message.content}`, settings.lang||'en', 1);
 
     const oldpending = pending;
