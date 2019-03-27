@@ -143,7 +143,8 @@ client.on('ready', async () => {
       settings.prefix = await googleTTS(`${message.member.displayName.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says:`, 'en', 1);
       settings.displayName = message.member.displayName;
     }
-    const url = await googleTTS(`${message.content}`, settings.lang||'en', 1);
+    const url = await googleTTS(`${message.content}`, settings.lang||'en', 1)
+      .catch(e => googleTTS(`Text to speech error.`, 'en', 1));
 
     const oldpending = pending;
     pending = new Promise(async (res)=>{
