@@ -22,7 +22,7 @@ const commands = {
     }
     message.delete().catch(e=>{});
   },
-  restart: ()=>{
+  restart: (parts, message)=>{
     // note: everyone can restart the server.. might need some ACL, but that beyond scope right now
     message.reply('bee boop bee boop');
     process.exit(0);
