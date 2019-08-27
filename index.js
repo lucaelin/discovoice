@@ -136,8 +136,7 @@ client.on('ready', async () => {
         });
         processCurrentlySpeaking();
       } else {
-        const cmd = parts[0]+'  ';
-        lang = cmd[2] + cmd[3];
+        const lang = parts[0].slice(0,2);
         users[message.author.id].lang = lang;
         message.reply('I\'ve set your language to '+lang);
         message.delete().catch(e=>{});
