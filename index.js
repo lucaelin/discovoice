@@ -12,6 +12,22 @@ const selectiveMode = true;
 
 const users = {};
 
+const commands = {
+  ignore: (parts, message, {currentlySpeaking, filters})=>{
+    if (typeof parts[1] !== 'string') return;
+    const [, id] = filters.userFilter.regex.exec(parts[1]) || [];
+    if (id) {
+      delete currentlySpeaking[id];
+      message.reply('I\'m going to ignore '+parts[1]);
+    }
+    message.delete().catch(e=>{});
+  },
+  restart: ()=>{
+    // note: everyone can restart the server.. might nees some ACL, but that beyond scope right now
+    process.exit(0);
+  },
+};
+
 const filters = {
   emoteFilter: {
     regex: /<a?:(\w*):[0-9]*>/,
@@ -109,24 +125,23 @@ client.on('ready', async () => {
 
     const settings = users[message.author.id];
     if (message.content.startsWith('>_')) {
-      const parts = message.content.split(' ');
-      if (parts[0] === '>_ignore') {
-        if (!parts[1]) return;
-        const [, id] = filters.userFilter.regex.exec(parts[1]) || [];
-        if (id) {
-          delete currentlySpeaking[id];
-          message.reply('I\'m going to ignore '+parts[1]);
-          processCurrentlySpeaking();
-        }
-        message.delete().catch(e=>{});
-      } else {
+      const parts = message.content.slice(2).split(' ');
+      const cmd = commands[parts[0]];
+      
+      if (!cmd === undefined) {
         const cmd = parts[0]+'  ';
         lang = cmd[2] + cmd[3];
         users[message.author.id].lang = lang;
         message.reply('I\'ve set your language to '+lang);
         message.delete().catch(e=>{});
-
+      } else {
+        cmd(parts, message, {
+          currentlySpeaking,
+          filters,
+        });
+        processCurrentlySpeaking();
       }
+      
       return;
     }
 
