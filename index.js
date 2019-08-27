@@ -22,6 +22,11 @@ const commands = {
     }
     message.delete().catch(e=>{});
   },
+  shush: (parts, message, {currentStream})=>{
+    currentStream.end();
+    message.reply('shhhh');
+    message.delete().catch(e=>{});
+  },
   restart: (parts, message)=>{
     // note: everyone can restart the server.. might need some ACL, but that beyond scope right now
     message.reply('bee boop bee boop');
@@ -79,6 +84,7 @@ client.on('ready', async () => {
   let pending = Promise.resolve();
   let lastUser = 0;
   let currentlySpeaking = {};
+  let currentStream;
   let speakCbs = [];
 
   const processCurrentlySpeaking = () => {
@@ -105,10 +111,10 @@ client.on('ready', async () => {
   });
 
   const playVoice = clip => {
-    const dispatcher = voice.play(clip);
+    currentStream = voice.play(clip);
     return new Promise((res, rej) => {
-      dispatcher.on('end', () => {
-        dispatcher.destroy();
+      currentStream.on('end', () => {
+        currentStream.destroy();
         return res();
       });
     });
@@ -133,6 +139,7 @@ client.on('ready', async () => {
         cmd(parts, message, {
           currentlySpeaking,
           filters,
+          currentStream,
         });
         processCurrentlySpeaking();
       } else {
