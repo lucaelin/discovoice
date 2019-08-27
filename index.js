@@ -23,7 +23,8 @@ const commands = {
     message.delete().catch(e=>{});
   },
   restart: ()=>{
-    // note: everyone can restart the server.. might nees some ACL, but that beyond scope right now
+    // note: everyone can restart the server.. might need some ACL, but that beyond scope right now
+    message.reply('bee boop bee boop');
     process.exit(0);
   },
 };
@@ -128,18 +129,18 @@ client.on('ready', async () => {
       const parts = message.content.slice(2).split(' ');
       const cmd = commands[parts[0]];
       
-      if (!cmd === undefined) {
-        const cmd = parts[0]+'  ';
-        lang = cmd[2] + cmd[3];
-        users[message.author.id].lang = lang;
-        message.reply('I\'ve set your language to '+lang);
-        message.delete().catch(e=>{});
-      } else {
+      if (typeof cmd === 'function') {
         cmd(parts, message, {
           currentlySpeaking,
           filters,
         });
         processCurrentlySpeaking();
+      } else {
+        const cmd = parts[0]+'  ';
+        lang = cmd[2] + cmd[3];
+        users[message.author.id].lang = lang;
+        message.reply('I\'ve set your language to '+lang);
+        message.delete().catch(e=>{});
       }
       
       return;
