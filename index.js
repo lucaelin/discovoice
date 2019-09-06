@@ -70,7 +70,7 @@ const filters = {
     blockQuoteFilter: {
       regex: /\`\`\`((?:[^\`\`\`]*)*)\`\`\`/g,
       run: (message, tag) => {
-        return message.content.replace(/\`\`\`((?:[^\`\`\`]*)*)\`\`\`/g, 'code);
+        return message.content.replace(/\`\`\`((?:[^\`\`\`]*)*)\`\`\`/g, 'code');
       }
     }
   }
