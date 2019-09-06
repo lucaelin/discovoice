@@ -69,9 +69,9 @@ const filters = {
     }
   },
   blockQuoteFilter: {
-    regex: /\`{3,}((?:[^\`{3,}]*)*)\`{3}/g,
+    regex: /\`{3,}((?:[^\`]*)*)\`{3}/,
     run: (message, tag) => {
-      return message.content.replace(/\`{3,}((?:[^\`{3,}]*)*)\`{3}/g, 'code');
+      return message.content.replace(/\`{3,}((?:[^\`]*)*)\`{3}/g, 'code');
     }
   }
 }
