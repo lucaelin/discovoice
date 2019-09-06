@@ -67,10 +67,10 @@ const filters = {
     run: (message, tag) => {
       return message.content.replace(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, 'url');
     },
-    blockQuoteFilter: {
-      regex: /\`\`\`((?:[^\`\`\`]*)*)\`\`\`/g,
-      run: (message, tag) => {
-        return message.content.replace(/\`\`\`((?:[^\`\`\`]*)*)\`\`\`/g, 'code');
+  blockQuoteFilter: {
+    regex: /\`{3,}((?:[^\`{3,}]*)*)\`{3}/g,
+    run: (message, tag) => {
+       return message.content.replace(/\`{3,}((?:[^\`{3,}]*)*)\`{3}/g, 'code');
       }
     }
   }
