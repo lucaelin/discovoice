@@ -71,15 +71,7 @@ const filters = {
   blockQuoteFilter: {
     regex: /\`{3,}/,
     run: (message, tag) => {
-      let regex = /\`{3,}/g;
-      var matches = [];
-      while (true) {
-        let match = regex.exec(message.content);
-        if (!match) {
-          break;
-        }
-        matches.push(match.index);
-      }
+      let matches = Array.from(message.content.matchAll(/\`{3,}/g)).map(x => x.index);
       let result = message.content;
       for (let i = (((matches.length / 2) | 0) * 2) - 2; i >= 0; i -= 2) {
         result = result.slice(0, matches[i]) + 'code' + result.slice(matches[i + 1] + 3);
