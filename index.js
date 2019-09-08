@@ -69,9 +69,22 @@ const filters = {
     }
   },
   blockQuoteFilter: {
-    regex: /\`{3,}((?:[^\`]*)*)\`{3}/,
+    regex: /\`{3,}/,
     run: (message, tag) => {
-      return message.content.replace(/\`{3,}((?:[^\`]*)*)\`{3}/g, 'code');
+      let regex = /\`{3,}/g;
+      var matches = [];
+      while (true) {
+        let match = regex.exec(message.content);
+        if (!match) {
+          break;
+        }
+        matches.push(match.index);
+      }
+      let result = message.content;
+      for (let i = (((matches.length / 2) | 0) * 2) - 2; i >= 0; i -= 2) {
+        result = result.slice(0, matches[i]) + 'code' + result.slice(matches[i + 1] + 3);
+      }
+      return result;
     }
   }
 }
@@ -160,7 +173,12 @@ client.on('ready', async () => {
 
     for (const filter of Object.values(filters)) {
       while (filter.regex.test(message.content)) {
-        message.content = filter.run(message, filter.regex.exec(message.content));
+        let result = filter.run(message, filter.regex.exec(message.content));
+        if (result !== message.content) {
+          message.content = result;
+        } else {
+          break;
+        }
       }
     }
 
