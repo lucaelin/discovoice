@@ -84,9 +84,9 @@ const filters = {
 client.on('ready', async () => {
   const ttsChannel = await client.channels.get(ttsChannelId);
   setInterval(async ()=>{
-    const messages = await ttsChannel.messages.fetch({limit:100});
+    const messages = await ttsChannel.fetchMessages({limit:100});
     let date = (new Date()).getTime() - 5*60*1000;
-    messages.each((m)=>{if (m.createdAt.getTime() < date) m.delete()});
+    messages.array().forEach((m)=>{if (m.createdAt.getTime() < date) m.delete()});
   }, 1*60*1000);
 
   const voiceCh = await client.channels.get(channelId);
@@ -122,12 +122,11 @@ client.on('ready', async () => {
   });
 
   const playVoice = clip => {
-    currentStream = voice.play(clip);
+    currentStream = voice.playArbitraryInput(clip);
     return new Promise((res, rej) => {
-      currentStream.on('end', () => {
-        currentStream.destroy();
-        return res();
-      });
+      currentStream.on('error', (e)=>{console.error(e); res();});
+      currentStream.on('warn', (e)=>{console.warn(e);});
+      currentStream.on('end', () =>{console.log('done'); res()});
     });
   }
 
@@ -137,7 +136,7 @@ client.on('ready', async () => {
     if (message.author.bot) return;
     if (message.channel.id != ttsChannelId) return;
     if (!message.content) return message.delete().catch(e=>{});
-    if (selectiveMode && (!message.member || !message.member.voice.channel || message.member.voice.channel.id != channelId)) return message.delete().catch(e=>{});
+    if (selectiveMode && (!message.member || message.member.voiceChannelID !== channelId)) return message.delete().catch(e=>{});
 
     if (!users[message.author.id]) users[message.author.id] = {};
 
@@ -145,7 +144,7 @@ client.on('ready', async () => {
     if (message.content.startsWith('>_')) {
       const parts = message.content.slice(2).split(' ');
       const cmd = commands[parts[0]];
-      
+
       if (typeof cmd === 'function') {
         cmd(parts, message, {
           currentlySpeaking,
@@ -159,7 +158,7 @@ client.on('ready', async () => {
         message.reply('I\'ve set your language to '+lang);
         message.delete().catch(e=>{});
       }
-      
+
       return;
     }
 
