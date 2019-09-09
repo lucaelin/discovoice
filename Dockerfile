@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
  && rm -rf /var/lib/apt/lists/*
 RUN add-apt-repository ppa:jonathonf/ffmpeg-4
-RUN apt-get update && apt-get install -y \
+
+RUN apt-get update && apt-get upgrade -y && apt-get install -y \
     ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 RUN npm i
