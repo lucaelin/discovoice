@@ -6,14 +6,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 #RUN apk add --no-cache git make gcc g++ python
-RUN apt-get update && apt-get install -y \
-    software-properties-common \
- && rm -rf /var/lib/apt/lists/*
-RUN add-apt-repository ppa:jonathonf/ffmpeg-4
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y \
-    ffmpeg \
- && rm -rf /var/lib/apt/lists/*
 RUN npm i
 #RUN apk del git make gcc g++ python
 
