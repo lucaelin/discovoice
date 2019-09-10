@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const fs = require('fs');
+const https = require('https');
 const googleTTS = require('google-tts-api');
 const config = require('./config.json');
 
@@ -84,9 +85,9 @@ const filters = {
 client.on('ready', async () => {
   const ttsChannel = await client.channels.get(ttsChannelId);
   setInterval(async ()=>{
-    const messages = await ttsChannel.fetchMessages({limit:100});
+    const messages = await ttsChannel.messages.fetch({limit:100});
     let date = (new Date()).getTime() - 5*60*1000;
-    messages.array().forEach((m)=>{if (m.createdAt.getTime() < date) m.delete()});
+    messages.each((m)=>{if (m.createdAt.getTime() < date) m.delete()});
   }, 1*60*1000);
 
   const voiceCh = await client.channels.get(channelId);
@@ -106,7 +107,6 @@ client.on('ready', async () => {
     if (!Object.keys(currentlySpeaking).length && speakCbs.length) speakCbs.shift(1)();
   }
 
-
   voice.on('speaking', (user, {bitfield})=>{
     if (!user) user = {};
     user.speaking = !!bitfield;
@@ -122,13 +122,16 @@ client.on('ready', async () => {
   });
 
   const playVoice = clip => {
-    currentStream = voice.playArbitraryInput(clip);
     return new Promise((res, rej) => {
-      currentStream.on('error', (e)=>{console.error(e); res();});
-      currentStream.on('warn', (e)=>{console.warn(e);});
-      currentStream.on('end', () =>{console.log('done'); res()});
+      https.get(clip, (stream)=>{
+        currentStream = voice.play(stream);
+        currentStream.on('error', (e) => {console.error(e); res();});
+        currentStream.on('warn', (e) => {console.warn(e);});
+        currentStream.on('end', () => res());
+        currentStream.on('finish', () => res());
+      });
     });
-  }
+  };
 
   client.on('message', async message => {
     if (!message.guild) return;
@@ -136,7 +139,11 @@ client.on('ready', async () => {
     if (message.author.bot) return;
     if (message.channel.id != ttsChannelId) return;
     if (!message.content) return message.delete().catch(e=>{});
-    if (selectiveMode && (!message.member || message.member.voiceChannelID !== channelId)) return message.delete().catch(e=>{});
+    if (selectiveMode && !(
+      message.member &&
+      message.member.voice &&
+      message.member.voice.channelID === channelId
+    )) return message.delete().catch(e=>{});
 
     if (!users[message.author.id]) users[message.author.id] = {};
 
