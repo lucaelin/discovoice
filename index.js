@@ -109,6 +109,7 @@ client.on('ready', async () => {
 
   voice.on('speaking', (user, {bitfield})=>{
     if (!user) user = {};
+    if (user.bot) return;
     user.speaking = !!bitfield;
     let timeout = (new Date()).getTime() - 1*60*1000;
 
