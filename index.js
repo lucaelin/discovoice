@@ -108,6 +108,7 @@ client.on('ready', async () => {
   }
 
   voice.on('speaking', (user, {bitfield})=>{
+    return; // FIXME https://github.com/discordjs/discord.js/issues/3524
     if (!user) user = {};
     if (user.bot) return;
     user.speaking = !!bitfield;
