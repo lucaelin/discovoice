@@ -1,7 +1,9 @@
 const Discord = require('discord.js');
 const fs = require('fs');
+const url = require('url');
 const https = require('https');
 const googleTTS = require('google-tts-api');
+const fetchVideoInfo = require('youtube-info');
 const config = require('./config.json');
 
 const client = new Discord.Client();
@@ -61,6 +63,14 @@ const filters = {
     run: (message, tag) => {
       let role = message.guild.roles.get(tag[1]);
       return message.content.replace(tag[0], '@ '+role.name);
+    }
+  },
+  youtubeFilter: {
+    regex: /(https:\/\/)?(www\.)?youtube\.[a-z]{2,6}\/watch\?([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
+    run: async (message, tag) => {
+      let id =  new URL(tag[0]).searchParams.get('v');
+      let info = await fetchVideoInfo(id);
+      return message.content.replace(/(https:\/\/)?(www\.)?youtube\.[a-z]{2,6}\/watch\?([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, info.title);
     }
   },
   linkFilter: {
@@ -173,7 +183,7 @@ client.on('ready', async () => {
 
     for (const filter of Object.values(filters)) {
       while (filter.regex.test(message.content)) {
-        let result = filter.run(message, filter.regex.exec(message.content));
+        let result = await filter.run(message, filter.regex.exec(message.content));
         if (result !== message.content) {
           message.content = result;
         } else {
