@@ -151,6 +151,7 @@ client.on('ready', async () => {
     if (message.author.bot) return;
     if (message.channel.id != ttsChannelId) return;
     if (!message.content) return message.delete().catch(e=>{});
+    if (message.content.startsWith('!') && !message.content.startsWith('!play')) return;
     if (selectiveMode && !(
       message.member &&
       message.member.voice &&
