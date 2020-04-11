@@ -47,21 +47,21 @@ const filters = {
   tagFilter: {
     regex: /<#([0-9]*)>/,
     run: (message, tag) => {
-      let channel = client.channels.get(tag[1]);
+      let channel = client.channels.cache.get(tag[1]);
       return message.content.replace(tag[0], '# '+channel.name);
     }
   },
   userFilter: {
     regex: /<@!?([0-9]*)>/,
     run: (message, tag) => {
-      let user = message.guild.members.get(tag[1]).user;
+      let user = message.guild.members.cache.get(tag[1]).user;
       return message.content.replace(tag[0], '@ '+user.username);
     }
   },
   rolesFilter: {
     regex: /<@&([0-9]*)>/,
     run: (message, tag) => {
-      let role = message.guild.roles.get(tag[1]);
+      let role = message.guild.roles.cache.get(tag[1]);
       return message.content.replace(tag[0], '@ '+role.name);
     }
   },
@@ -93,14 +93,14 @@ const filters = {
 }
 
 client.on('ready', async () => {
-  const ttsChannel = await client.channels.get(ttsChannelId);
+  const ttsChannel = await client.channels.cache.get(ttsChannelId);
   setInterval(async ()=>{
     const messages = await ttsChannel.messages.fetch({limit:100});
     let date = (new Date()).getTime() - 5*60*1000;
     messages.each((m)=>{if (m.createdAt.getTime() < date) m.delete()});
   }, 1*60*1000);
 
-  const voiceCh = await client.channels.get(channelId);
+  const voiceCh = await client.channels.cache.get(channelId);
   const voice = await voiceCh.join();
 
   let pending = Promise.resolve();
