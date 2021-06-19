@@ -3,10 +3,22 @@ const fs = require('fs');
 const url = require('url');
 const https = require('https');
 const googleTTS = require('google-tts-api');
-const fetchVideoInfo = require('youtube-info');
+const fetchVideoInfo = require('get-youtube-title');
 const config = require('./config.json');
+const {connectToChannel, playUrl} = require('./voice.js');
+const playVoice = playUrl;
 
-const client = new Discord.Client();
+const getAudioUrl = (text, lang='en')=>{
+	const url = new URL('https://translate.google.com/translate_tts?ie=UTF-8&&total=1&idx=0&client=tw-ob&prev=input');
+	url.searchParams.set('tl', lang.toLowerCase());
+	url.searchParams.set('q', text);
+	url.searchParams.set('textlen', text.length);
+	return url.href;
+};
+
+const client = new Discord.Client({
+	ws: { intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_MESSAGES, Discord.Intents.FLAGS.GUILD_VOICE_STATES] },
+});
 
 client.login(config.token);
 const channelId = config.voiceChannelId;
@@ -69,7 +81,7 @@ const filters = {
     regex: /(https:\/\/)?(www\.)?youtube\.[a-z]{2,6}\/watch\?([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
     run: async (message, tag) => {
       let id =  new URL(tag[0]).searchParams.get('v');
-      let info = await fetchVideoInfo(id);
+      let info = await new Promise(res=>fetchVideoInfo(id, (err, title)=>res({title})));
       return message.content.replace(/(https:\/\/)?(www\.)?youtube\.[a-z]{2,6}\/watch\?([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, info.title);
     }
   },
@@ -101,7 +113,7 @@ client.on('ready', async () => {
   }, 1*60*1000);
 
   const voiceCh = await client.channels.cache.get(channelId);
-  const voice = await voiceCh.join();
+  const voice = await connectToChannel(voiceCh);
 
   let pending = Promise.resolve();
   let lastUser = 0;
@@ -118,6 +130,7 @@ client.on('ready', async () => {
   }
 
   voice.on('speaking', (user, {bitfield})=>{
+		console.log('speaking event', user);
     return; // FIXME https://github.com/discordjs/discord.js/issues/3524
     if (!user) user = {};
     if (user.bot) return;
@@ -132,18 +145,6 @@ client.on('ready', async () => {
 
     processCurrentlySpeaking();
   });
-
-  const playVoice = clip => {
-    return new Promise((res, rej) => {
-      https.get(clip, (stream)=>{
-        currentStream = voice.play(stream);
-        currentStream.on('error', (e) => {console.error(e); res();});
-        currentStream.on('warn', (e) => {console.warn(e);});
-        currentStream.on('end', () => res());
-        currentStream.on('finish', () => res());
-      });
-    });
-  };
 
   client.on('message', async message => {
     if (!message.guild) return;
@@ -197,11 +198,10 @@ client.on('ready', async () => {
     console.log(text);
 
     if (!settings.prefix || settings.displayName != message.member.displayName) {
-      settings.prefix = await googleTTS(`${message.member.displayName.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says:`, 'en', 1);
+      settings.prefix = getAudioUrl(`${message.member.displayName.replace(/([A-Z][a-z])/g,' $1').replace(/(\d)/g,' $1')} says:`, 'en');
       settings.displayName = message.member.displayName;
     }
-    const url = await googleTTS(`${message.content}`, settings.lang||'en', 1)
-      .catch(e => googleTTS(`Text to speech error.`, 'en', 1));
+    const url = getAudioUrl(`${message.content}`, settings.lang);
 
     const oldpending = pending;
     pending = new Promise(async (res)=>{
