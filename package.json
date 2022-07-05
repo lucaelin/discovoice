@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.5.3",
+    "@discordjs/opus": "^0.8.0",
     "@discordjs/voice": "^0.5.0",
     "discord.js": "^12.5.3",
     "get-youtube-title": "^1.0.1",
